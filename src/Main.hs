@@ -13,7 +13,7 @@ data Ball = Ball {
              height :: Float,         -- ^ initial height
              gravity :: Float,        -- ^ gravity 
              position :: Float,       -- ^ current position
-             diameter :: Float       -- ^ size of the ball
+             radius :: Float          -- ^ size of the ball
             } deriving Show
 
 moveBall :: Ball -> Float -> Ball
@@ -28,7 +28,7 @@ moveBall b@Ball{..} dt = trace (show (s, d', v')) $ b {direction = d', velocity 
 
 initialState h d = Ball Down 0.0 h 9.81 h d
 
-drawBall b = Color red $ Translate 0 y $ ThickCircle rad dia
+drawBall b = Color red $ Translate 0 y $ circleSolid rad
     where y = position b
           dia = diameter b
           rad = 0.5 * dia
