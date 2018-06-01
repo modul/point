@@ -13,20 +13,25 @@ data Ball = Ball {
              height :: Float,         -- ^ initial height
              gravity :: Float,        -- ^ gravity 
              position :: Float,       -- ^ current position
-             radius :: Float          -- ^ size of the ball
+             radius :: Float,         -- ^ size of the ball
+             bounce :: Float          -- ^ coefficient of restitution 
             } deriving Show
 
 moveBall :: Float -> Ball -> Ball
-moveBall dt b@Ball{..} = trace (show (s, d', v')) $ b {direction = d', velocity = v', position = s}
+moveBall dt b@Ball{..} = trace (show (s, d', v')) $ b {direction = d', velocity = v', position = s'}
     where s = position + velocity
-          d' = if direction == Up && s >= height then Down 
+          s' = if v' == 0 then 0 else s
+          d' = if direction == Up && s >= height || velocity <= 0 then Down 
                 else if direction == Down && s <= 0 then Up
                  else direction
           v' = if direction == Up then 
                  velocity - gravity * dt
-                else if s <= 0 then abs velocity else velocity - gravity * dt
+                else if s <= 0 then 
+                 let v = abs velocity 
+                  in if v < 0.1 then 0 else bounce * (abs velocity) 
+                else velocity - gravity * dt
 
-initialState h d = Ball Down 0.0 h 9.81 h d
+initialState b h d = Ball Down 0.0 h 9.81 h d b
 
 drawBall b = Color red $ Translate 0 y $ circleSolid rad
     where y = position b
@@ -55,6 +60,9 @@ background = white
 
 update _ = moveBall 
 
+infiniteBounce = initialState 1.0
+finiteBounce = initialState 0.85
+
 main :: IO ()
-main = simulate disp background fps (initialState 300 30) (render (-200)) update
+main = simulate disp background fps (finiteBounce 500 30) (render (-200)) update
 
