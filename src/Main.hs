@@ -30,14 +30,18 @@ initialState h d = Ball Down 0.0 h 9.81 h d
 
 drawBall b = Color red $ Translate 0 y $ circleSolid rad
     where y = position b
-          dia = diameter b
-          rad = 0.5 * dia
+          rad = radius b
 
-drawGround p = Line [(-100, p), (100, p)]
+drawText size = Scale size size . Text
+
+drawStats b = Translate 0 (-60) $ pictures [box, vel, pos]
+    where box = rectangleWire 400 60
+          pos = Translate (-190) 0 $ drawText size $ "s: " ++ (show $ position b)
+          vel = Translate    10  0 $ drawText size $ "v: " ++ (show $ velocity b)
+          size = 0.20
 
 render :: Float -> Ball -> Picture
-render offset ball = Translate 0 offset $ pictures [drawGround (-30) , drawBall ball]
-        
+render offset ball = Translate 0 offset $ pictures [drawStats ball, drawBall ball]
 
 fps = 60
 
