@@ -16,8 +16,8 @@ data Ball = Ball {
              radius :: Float          -- ^ size of the ball
             } deriving Show
 
-moveBall :: Ball -> Float -> Ball
-moveBall b@Ball{..} dt = trace (show (s, d', v')) $ b {direction = d', velocity = v', position = s}
+moveBall :: Float -> Ball -> Ball
+moveBall dt b@Ball{..} = trace (show (s, d', v')) $ b {direction = d', velocity = v', position = s}
     where s = position + velocity
           d' = if direction == Up && s >= height then Down 
                 else if direction == Down && s <= 0 then Up
@@ -35,9 +35,9 @@ drawBall b = Color red $ Translate 0 y $ circleSolid rad
 drawText size = Scale size size . Text
 
 drawStats b = Translate 0 (-60) $ pictures [box, vel, pos]
-    where box = rectangleWire 400 60
-          pos = Translate (-190) 0 $ drawText size $ "s: " ++ (show $ position b)
-          vel = Translate    10  0 $ drawText size $ "v: " ++ (show $ velocity b)
+    where box = rectangleWire 450 60
+          pos = Translate (-190) (-10) $ drawText size $ "s: " ++ (show $ position b)
+          vel = Translate    10  (-10) $ drawText size $ "v: " ++ (show $ velocity b)
           size = 0.20
 
 render :: Float -> Ball -> Picture
@@ -53,7 +53,7 @@ disp = InWindow title (width, height) position
 
 background = white
 
-update _ t b = moveBall b t
+update _ = moveBall 
 
 main :: IO ()
 main = simulate disp background fps (initialState 300 30) (render (-200)) update
