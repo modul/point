@@ -4,26 +4,29 @@ module Main where
 
 import Debug.Trace
 import Graphics.Gloss
+import Graphics.Gloss.Interface.IO.Game
 
 data Ball = Ball {
+             run :: Bool,            -- ^ run movement
              velocity :: Float,       -- ^ current velocity
              height :: Float,         -- ^ initial height
              gravity :: Float,        -- ^ gravity 
              position :: Float,       -- ^ current position
              radius :: Float,         -- ^ size of the ball
-             bounce :: Float          -- ^ coefficient of restitution 
+             bounce :: Float          -- ^ coefficient of restitution              
             } deriving Show
 
 moveBall :: Float -> Ball -> Ball
-moveBall dt b@Ball{..} = trace (show (s, v')) $ b {velocity = v', position = s'}
-    where s = position + velocity 
+moveBall dt b@Ball{..} = trace (show (v', s')) $ go
+    where go = if run then b {velocity = v', position = s'} else b
+          s = position + velocity 
           s' = if v' == 0 then 0 else s
           v' = let v = abs velocity in 
                 if velocity <= 0 && s <= 0 then
                  if v < 0.1 then 0 else bounce * v
                 else velocity - gravity * dt
 
-initialState b g h r = Ball (-g) h g h r b
+initialState b h g r = Ball True (-g) h g h r b
 
 drawBall b = Color red $ Translate 0 y $ circleSolid rad
     where y = position b
@@ -50,11 +53,18 @@ disp = InWindow title (width, height) position
 
 background = white
 
-update _ = moveBall 
+update = moveBall
 
-infiniteBounce = initialState 1.0
-finiteBounce = initialState 0.85
+handle (EventKey (SpecialKey KeySpace) Down _ _) ball@Ball{..} = ball {run = (not run)}
+handle (EventKey (SpecialKey KeyDown ) Down _ _) ball@Ball{..} = ball {velocity = (-2) * gravity }
+handle (EventKey (SpecialKey KeyEnter) Down _ _) ball@Ball{..} = ball {position = height, velocity = (-gravity)}
+handle _ b = b
+
+infiniteBounce = initialState 1.0 300
+finiteBounce = initialState 0.85 500
 
 main :: IO ()
-main = simulate disp background fps (finiteBounce 9.81 500 30) (render (-200)) update
+main = game
 
+simulation = simulate disp background fps (finiteBounce 9.81 30) (render (-200)) (\viewPort -> update)
+game = play disp background fps (infiniteBounce 9.81 30) (render (-200)) handle update
