@@ -28,16 +28,14 @@ moveBall dt b@Ball{..} = trace (show (v', s')) $ go
 
 initialState b h g r = Ball True (-g) h g h r b
 
-drawBall b = Color red $ Translate 0 y $ circleSolid rad
-    where y = position b
-          rad = radius b
+drawBall Ball{..} = Color red $ Translate 0 position $ circleSolid radius
 
 drawText size = Scale size size . Text
 
-drawStats b = Translate 0 (-60) $ pictures [box, vel, pos]
+drawStats Ball{..} = Translate 0 (-60) $ pictures [box, vel, pos]
     where box = rectangleWire 450 60
-          pos = Translate (-190) (-10) $ drawText size $ "s: " ++ (show $ position b)
-          vel = Translate    10  (-10) $ drawText size $ "v: " ++ (show $ velocity b)
+          pos = Translate (-190) (-10) $ drawText size $ "s: " ++ (show position)
+          vel = Translate    10  (-10) $ drawText size $ "v: " ++ (show velocity)
           size = 0.20
 
 render :: Float -> Ball -> Picture
