@@ -6,7 +6,7 @@ import Debug.Trace
 import Graphics.Gloss
 
 data Ball = Ball {
-             velocity :: Float,       -- ^ initial velocity since change of direction
+             velocity :: Float,       -- ^ current velocity
              height :: Float,         -- ^ initial height
              gravity :: Float,        -- ^ gravity 
              position :: Float,       -- ^ current position
@@ -23,7 +23,7 @@ moveBall dt b@Ball{..} = trace (show (s, v')) $ b {velocity = v', position = s'}
                  if v < 0.1 then 0 else bounce * v
                 else velocity - gravity * dt
 
-initialState b h r = Ball 0.0 h 9.81 h r b
+initialState b g h r = Ball (-g) h g h r b
 
 drawBall b = Color red $ Translate 0 y $ circleSolid rad
     where y = position b
@@ -56,5 +56,5 @@ infiniteBounce = initialState 1.0
 finiteBounce = initialState 0.85
 
 main :: IO ()
-main = simulate disp background fps (finiteBounce 500 30) (render (-200)) update
+main = simulate disp background fps (finiteBounce 9.81 500 30) (render (-200)) update
 
