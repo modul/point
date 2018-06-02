@@ -32,12 +32,13 @@ drawBall Ball{..} = Color red $ Translate 0 position $ circleSolid radius
 
 drawText size = Scale size size . Text
 
-drawStats Ball{..} = Translate 0 (-0.5 * height - radius) $ pictures [box, vel, pos]
+drawStats Ball{..} = Translate 0 (-0.5 * height - radius) $ pictures [box, vel, pos, bnc]
     where box = rectangleWire 450 height
-          pos = Translate (-190) (-10) $ drawText size $ "s: " ++ (show position)
-          vel = Translate    10  (-10) $ drawText size $ "v: " ++ (show velocity)
+          pos = Translate (-190)    10  $ drawText size $ "s: " ++ (show position)
+          vel = Translate    10     10  $ drawText size $ "v: " ++ (show velocity)
+          bnc = Translate (-190)  (-25) $ drawText size $ "b: " ++ (show bounce)
           size = 0.20
-          height = 60
+          height = 80
 
 render :: Float -> Ball -> Picture
 render offset ball = Translate 0 offset $ pictures [drawStats ball, drawBall ball]
@@ -54,9 +55,11 @@ background = white
 
 update = moveBall
 
-handle (EventKey (SpecialKey KeySpace) Down _ _) ball@Ball{..} = ball {run = (not run)}
-handle (EventKey (SpecialKey KeyDown ) Down _ _) ball@Ball{..} = ball {velocity = (-2) * gravity }
-handle (EventKey (SpecialKey KeyEnter) Down _ _) ball@Ball{..} = ball {position = height, velocity = (-gravity)}
+handle (EventKey (SpecialKey KeySpace   ) Down _ _) ball@Ball{..} = ball {run = (not run)}
+handle (EventKey (SpecialKey KeyDown    ) Down _ _) ball@Ball{..} = ball {velocity = (-2) * gravity }
+handle (EventKey (SpecialKey KeyEnter   ) Down _ _) ball@Ball{..} = ball {position = height, velocity = (-gravity)}
+handle (EventKey (SpecialKey KeyPageUp  ) Down _ _) ball@Ball{..} = ball {bounce = bounce + 0.05}
+handle (EventKey (SpecialKey KeyPageDown) Down _ _) ball@Ball{..} = ball {bounce = if bounce > 0.5 then bounce - 0.05 else bounce}
 handle _ b = b
 
 infiniteBounce = initialState 1.0 300
