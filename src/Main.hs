@@ -32,11 +32,12 @@ drawBall Ball{..} = Color red $ Translate 0 position $ circleSolid radius
 
 drawText size = Scale size size . Text
 
-drawStats Ball{..} = Translate 0 (-60) $ pictures [box, vel, pos]
-    where box = rectangleWire 450 60
+drawStats Ball{..} = Translate 0 (-0.5 * height - radius) $ pictures [box, vel, pos]
+    where box = rectangleWire 450 height
           pos = Translate (-190) (-10) $ drawText size $ "s: " ++ (show position)
           vel = Translate    10  (-10) $ drawText size $ "v: " ++ (show velocity)
           size = 0.20
+          height = 60
 
 render :: Float -> Ball -> Picture
 render offset ball = Translate 0 offset $ pictures [drawStats ball, drawBall ball]
