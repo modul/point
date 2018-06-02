@@ -9,6 +9,7 @@ import Graphics.Gloss.Interface.IO.Game
 data Ball = Ball {
              run :: Bool,             -- ^ run movement
              showStats :: Bool,       -- ^ show statistics 
+             showHelp :: Bool,        -- ^ show help
              velocity :: Float,       -- ^ current velocity
              height :: Float,         -- ^ initial height
              gravity :: Float,        -- ^ gravity 
@@ -27,7 +28,7 @@ moveBall dt b@Ball{..} = trace (show (v', s')) $ go
                  if v < 0.1 then 0 else bounce * v
                 else velocity - gravity * dt
 
-initialState b h g r = Ball True True (-g) h g h r b
+initialState b h g r = Ball True True False (-g) h g h r b
 
 drawBall Ball{..} = Color red $ Translate 0 position $ circleSolid radius
 
@@ -42,8 +43,24 @@ drawStats Ball{..} = Translate 0 (-0.5 * height - radius) $ pictures (box : stat
           size = 0.20
           height = 80
 
+drawHelp Ball{..} | showHelp = pictures [box, help]
+                  | otherwise = Blank
+    where box = Color white $ rectangleSolid 1000 height
+          help = pictures [space, down, enter, pgup, pgdn, f1, tab, esc]
+          height = 2000
+          size = 0.20
+          space = Translate (-300) (400) $ drawText size $ "Space: toggle pause"
+          down  = Translate (-300) (370) $ drawText size $ "Down: bounce ball"
+          enter = Translate (-300) (340) $ drawText size $ "Enter: reset to inital position"
+          pgup  = Translate (-300) (310) $ drawText size $ "Page Up: increment bounce"
+          pgdn  = Translate (-300) (280) $ drawText size $ "Page Down: decrement bounce"
+          f1    = Translate (-300) (250) $ drawText size $ "F1: toggle help"
+          tab   = Translate (-300) (220) $ drawText size $ "Tab: toggle statistics"
+          esc   = Translate (-300) (190) $ drawText size $ "Esc: quit"
+        
+
 render :: Float -> Ball -> Picture
-render offset ball = Translate 0 offset $ pictures [drawStats ball, drawBall ball]
+render offset ball = Translate 0 offset $ pictures [drawStats ball, drawBall ball, drawHelp ball]
 
 fps = 60
 
@@ -62,7 +79,8 @@ handle (EventKey (SpecialKey KeyDown    ) Down _ _) ball@Ball{..} = ball {veloci
 handle (EventKey (SpecialKey KeyEnter   ) Down _ _) ball@Ball{..} = ball {position = height, velocity = (-gravity)}
 handle (EventKey (SpecialKey KeyPageUp  ) Down _ _) ball@Ball{..} = ball {bounce = bounce + 0.05}
 handle (EventKey (SpecialKey KeyPageDown) Down _ _) ball@Ball{..} = ball {bounce = if bounce > 0.5 then bounce - 0.05 else bounce}
-handle (EventKey (SpecialKey KeyF1)       Down _ _) ball@Ball{..} = ball {showStats = not showStats}
+handle (EventKey (SpecialKey KeyF1)       Down _ _) ball@Ball{..} = let help = not showHelp in ball {showHelp = help, run = not help}
+handle (EventKey (SpecialKey KeyTab)      Down _ _) ball@Ball{..} = ball {showStats = not showStats}
 handle _ b = b
 
 infiniteBounce = initialState 1.0 300
