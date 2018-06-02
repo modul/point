@@ -5,10 +5,7 @@ module Main where
 import Debug.Trace
 import Graphics.Gloss
 
-data Direction = Up | Down deriving (Eq, Show)
-
 data Ball = Ball {
-             direction :: Direction,  -- ^ current direction
              velocity :: Float,       -- ^ initial velocity since change of direction
              height :: Float,         -- ^ initial height
              gravity :: Float,        -- ^ gravity 
@@ -18,20 +15,15 @@ data Ball = Ball {
             } deriving Show
 
 moveBall :: Float -> Ball -> Ball
-moveBall dt b@Ball{..} = trace (show (s, d', v')) $ b {direction = d', velocity = v', position = s'}
-    where s = position + velocity
+moveBall dt b@Ball{..} = trace (show (s, v')) $ b {velocity = v', position = s'}
+    where s = position + velocity 
           s' = if v' == 0 then 0 else s
-          d' = if direction == Up && s >= height || velocity <= 0 then Down 
-                else if direction == Down && s <= 0 then Up
-                 else direction
-          v' = if direction == Up then 
-                 velocity - gravity * dt
-                else if s <= 0 then 
-                 let v = abs velocity 
-                  in if v < 0.1 then 0 else bounce * (abs velocity) 
+          v' = let v = abs velocity in 
+                if velocity <= 0 && s <= 0 then
+                 if v < 0.1 then 0 else bounce * v
                 else velocity - gravity * dt
 
-initialState b h d = Ball Down 0.0 h 9.81 h d b
+initialState b h r = Ball 0.0 h 9.81 h r b
 
 drawBall b = Color red $ Translate 0 y $ circleSolid rad
     where y = position b
